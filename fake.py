@@ -4,14 +4,11 @@ import json
 
 fake = Faker()
 
-# Function to generate fake email in 'firstname+lastname@gmail.com' format
 def generate_fake_email(first_name, last_name):
-    # Remove spaces and special characters from first and last names
-    first_name = re.sub(r'[^a-zA-Z]', '', first_name).lower()  # Remove non-alphabetic characters and convert to lowercase
-    last_name = re.sub(r'[^a-zA-Z]', '', last_name).lower()   # Same for last name
+    first_name = re.sub(r'[^a-zA-Z]', '', first_name).lower() 
+    last_name = re.sub(r'[^a-zA-Z]', '', last_name).lower()
     return f"{first_name}{last_name}@gmail.com"
 
-# Generate a list of fake users
 user_data = []
 for _ in range(400):
     first_name = fake.first_name()
@@ -26,7 +23,6 @@ for _ in range(400):
     }
     user_data.append(user)
 
-# Save data to a JSON file
 with open('fake_user_data.json', 'w') as f:
     json.dump(user_data, f, indent=4)
 
