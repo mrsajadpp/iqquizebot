@@ -32,87 +32,190 @@ import time
 
 
 def convert_date(date):
-    date_parts = date.split("/")
-    
-    return f"{date_parts[1]}{date_parts[0]}{date_parts[2]}"
+    try:
+        date_parts = date.split("/")
+        return f"{date_parts[1]}{date_parts[0]}{date_parts[2]}"
+    except IndexError:
+        raise ValueError(f"Invalid date format: {date}. Expected DD/MM/YYYY.")
 
 
 def load_data(file_path):
-    with open(file_path, "r") as file:
-        return json.load(file)
+    try:
+        with open(file_path, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        exit(1)
+
+
+def scroll_to_element(driver, element):
+    driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
+    time.sleep(1) 
 
 
 def fill_form(data):
     driver = webdriver.Chrome()
+    wait = WebDriverWait(driver, 10)
+
     try:
         driver.get("https://www.manoramaquiz.in/signUp")
-        wait = WebDriverWait(driver, 10)
 
         full_name_field = wait.until(
             EC.presence_of_element_located((By.ID, "fullName"))
         )
+        scroll_to_element(driver, full_name_field)
         full_name_field.send_keys(data["fullName"])
 
         school_dropdown = driver.find_element(By.ID, "rc_select_0")
+        scroll_to_element(driver, school_dropdown)
+        school_dropdown.click()
+        time.sleep(1)
         school_dropdown.send_keys(data["schoolName"])
         school_dropdown.send_keys(Keys.RETURN)
 
         phone_field = driver.find_element(By.ID, "PhoneNumber")
+        scroll_to_element(driver, phone_field)
         phone_field.send_keys(data["phoneNumber"])
 
         email_field = driver.find_element(By.ID, "email")
+        scroll_to_element(driver, email_field)
         email_field.send_keys(data["email"])
 
         dob_input = driver.find_element(By.ID, "dob")
+        scroll_to_element(driver, dob_input)
         dob_input.send_keys(data["dob"])
 
-        driver.execute_script(
-            """
+        role_tab_script = """
             const elements = document.querySelectorAll('.role-tab');
             if (elements.length >= 4) {
-                elements[3].click();  // 4th element (0-indexed)
+                elements[3].scrollIntoView({behavior: 'smooth', block: 'center'});
+                elements[3].click();
             } else {
-                console.log('4th element not found');
+                console.error('4th role-tab not found');
             }
-            """
-        )
-        time.sleep(5)
+        """
+        driver.execute_script(role_tab_script)
+        time.sleep(2)
 
         submit_button = driver.find_element(By.CLASS_NAME, "submit-button")
+        scroll_to_element(driver, submit_button)
         submit_button.click()
         print(f"Form for {data['fullName']} submitted successfully.")
-
-        time.sleep(5)
+        time.sleep(2)
 
         driver.get("https://www.manoramaquiz.in/")
 
-        wait = WebDriverWait(driver, 10)
+        password = convert_date(data["dob"])
+        password_field = wait.until(
+            EC.visibility_of_element_located((By.ID, "password"))
+        )
+        scroll_to_element(driver, password_field)
+        password_field.send_keys(password)
 
-        try:
-            password_field = wait.until(
-                EC.visibility_of_element_located((By.ID, "password"))
-            )
-            password = convert_date(data["dob"])
-            password_field.send_keys(password)
+        email_login_field = wait.until(
+            EC.visibility_of_element_located((By.ID, "username"))
+        )
+        scroll_to_element(driver, email_login_field)
+        email_login_field.send_keys(data["email"])
 
-            email_login_field = wait.until(
-                EC.visibility_of_element_located((By.ID, "username"))
-            )
-            email_login_field.send_keys(data["email"])
+        submit_button = wait.until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "submit-button"))
+        )
+        scroll_to_element(driver, submit_button)
+        submit_button.click()
+        print(f"Login for {data['fullName']} successful.")
 
-            submit_button = wait.until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "submit-button"))
-            )
-            submit_button.click()
-            print(f"Login for {data['fullName']} successful.")
-            time.sleep(5)
-        except Exception as e:
-            print(f"An error occurred while logging in for {data['fullName']}: {e}")
+        time.sleep(3)
 
+        start_quiz_button = driver.find_element(By.CSS_SELECTOR, ".button-container .banner-button")
+        start_quiz_button.click()
+
+        time.sleep(2)
+
+        inputs = driver.find_elements(By.CSS_SELECTOR, ".answer-cells .answer-cell")
+
+        answers = ['B', 'A', 'R', 'O', 'D', 'A']
+
+        for i, value in enumerate(answers):
+             inputs[i].send_keys(value)
+
+        time.sleep(1)
+
+        next_quiz_button = driver.find_element(By.CSS_SELECTOR, ".next-btn")
+        scroll_to_element(driver, next_quiz_button)
+        next_quiz_button.click()
+
+        time.sleep(1)
+
+        inputs_two = driver.find_elements(By.CSS_SELECTOR, ".answer-cells .answer-cell")
+
+        answers_two = ['L', 'A', 'L', 'A', 'L', 'A', 'J', 'P', 'A', 'T', 'R', 'A', 'I']
+
+        for i, value in enumerate(answers_two):
+             inputs_two[i].send_keys(value)
+
+        time.sleep(1)
+
+        next_quiz_button = driver.find_element(By.CSS_SELECTOR, ".next-btn")
+        scroll_to_element(driver, next_quiz_button)
+        next_quiz_button.click()
+
+        time.sleep(1)
+
+        inputs_three = driver.find_elements(By.CSS_SELECTOR, ".answer-cells .answer-cell")
+
+        answers_three = ['E', 'S', 'A']
+
+        for i, value in enumerate(answers_three):
+             inputs_three[i].send_keys(value)
+
+        time.sleep(1)
+
+        next_quiz_button = driver.find_element(By.CSS_SELECTOR, ".next-btn")
+        scroll_to_element(driver, next_quiz_button)
+        next_quiz_button.click()
+
+        time.sleep(1)
+
+        inputs_four = driver.find_elements(By.CSS_SELECTOR, ".answer-cells .answer-cell")
+
+        answers_four = ['S', 'O', 'U', 'T', 'H', 'K', 'O', 'R', 'E', 'A']
+
+        for i, value in enumerate(answers_four):
+             inputs_four[i].send_keys(value)
+
+        time.sleep(1)
+
+        next_quiz_button = driver.find_element(By.CSS_SELECTOR, ".next-btn")
+        scroll_to_element(driver, next_quiz_button)
+        next_quiz_button.click()
+
+        time.sleep(1)
+
+
+        inputs_five = driver.find_elements(By.CSS_SELECTOR, ".answer-cells .answer-cell")
+
+        answers_five = ['S', 'N', 'E', 'H', 'A', 'L', 'A', 'Y', 'A', 'M']
+
+        for i, value in enumerate(answers_five):
+             inputs_five[i].send_keys(value)
+
+        time.sleep(1)
+
+        next_quiz_button = driver.find_element(By.CSS_SELECTOR, ".submit-btn")
+        scroll_to_element(driver, next_quiz_button)
+        next_quiz_button.click()
+
+        time.sleep(1)
 
     except Exception as e:
-        print(f"An error occurred while processing {data['fullName']}: {e}")
+        print(f"An error occurred for {data['fullName']}: {e}")
+
     finally:
+        time.sleep(2)
         driver.quit()
         print(f"Completed processing for {data['fullName']}")
 
