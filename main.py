@@ -31,12 +31,26 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
+# def convert_date(date):
+#     try:
+#         date_parts = date.split("/")
+#         return f"{date_parts[1]}{date_parts[0]}{date_parts[2]}"
+#     except IndexError:
+#         raise ValueError(f"Invalid date format: {date}. Expected DD/MM/YYYY.")
 def convert_date(date):
     try:
+        # Split the date into parts
         date_parts = date.split("/")
-        return f"{date_parts[1]}{date_parts[0]}{date_parts[2]}"
-    except IndexError:
-        raise ValueError(f"Invalid date format: {date}. Expected DD/MM/YYYY.")
+        
+        # Ensure we have exactly three parts
+        if len(date_parts) != 3:
+            raise ValueError(f"Invalid date format: {date}. Expected DD/MM/YYYY.")
+        
+        # Return the formatted date
+        return f"{date_parts[0]}{date_parts[1]}{date_parts[2]}"
+    
+    except (IndexError, ValueError) as e:
+        raise ValueError(f"Invalid date format: {date}. Expected DD/MM/YYYY.") from e
 
 
 def load_data(file_path):
